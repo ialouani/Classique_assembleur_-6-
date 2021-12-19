@@ -1,0 +1,45 @@
+Objet: Vectorisation pour accelerer les calculs.
+La vectorisation permet de faire des manipulations en groupe suivant des exploitations de performance memoire.
+Exo1:
+Les registres sur 256 bits en asm sont: ymm0,..,ymm15.(16 registres)..///
+Ces registres peuvent etre dans 256 bits donc pour un flottant de 4*8=32 bits, on peut stocker 256/32=8 flottants suivant un seul registre de 256 bits..(debut de vectorisation)
+Les operations seront:
+vaddps, vsubps, vmulps, vdivps, 
+vmovups vreg,[reg] => met au debut de vreg l'adresse de reg qui sera par exemple l'adresse d'un tableau sur 32 bits..(et donc avec cela, on sera en mesure de stocker 256/32 soit 8 valeurs differentes successives d'un coup) QUI RESTE LE MEME (acces via vreg par en incrementant comme avec des tableaux de 64 bits classique (long long int*)).////
+vmovups [reg],vreg => valeur a l'adresse reg (32 bits(float(parlons-en apres))) recoit vreg (vreg est sur 256 bits) mais ca stocke que les 32 premiers soit le 1er element parmi les 8 elements representant les valeurs du ''tableau'' vreg.((en terme d'adresses))
+RAPPEL:(db 1 byte (1 octet)) apres le word.. ()()
+dd=> double word (2*2=4 octets soit 32 bits) :pratique pour des tableaux de float en section .data PAR EXEMPLE.
+dq: quarter*4 soit 2*(4)=8<=>8*8=64 bits.
+E: dq 1,2,3 <=> declaration du tableau E dont les elements sont de type long long int et valent respectiement:
+[E]=(machine 64 bits)1; 2=[E+8]; 3=[E+16]; voilà./
+Rqs:(!!->///) impossible de transformer reg vers vreg et pas affectation constante vers vreg;obligation de passer par la MEMOIRE.(LEs 4 premieres operations se font via 3 parametres au lieu de 2)
+---------------RAPPELS et avant(MIEUX LA PRATIQUE).::
+***DEBUT_exo1:(on va faire plus de details ici indirectement par l'ecriture du code)
+1->on trouve: 1.079s~1s.
+2->on trouve: 0.0469s~0.5s. (environ la moitie du temps precedent)
+3->
+code C: 1.397s tend vers 1.5s.(ajout d'une 1/2 seconde)
+code asm: 0.499s~1/2 s.(cst)
+4->On trouvE:  un temps en faisant plusieurs fois la meme chose(sauf l'affichage) --elargir_l'ecart-qui_sans_boucle_est_minime_imprevisible_sans_shell(..///) 
+      1.117s VS. 1.084s pour une repetition pas grande +=> ecart important (ordre de grandeurs valeurs precedentes en ecart pas en comparaison direct)  
+ =>les affectations sans passer par une autre variable (vfmadd23ps) et les approximations incluant des calculs deja faits dans les autres versions permettent d'aller plus vite.
+__comment4.
+comme1&2: tout simple:: avantage de la vectorisation. (voir readme.md)
+comme3: rslt meme car l'ecart vu la vectorisation qui l'emporte est minime pour un code vectoriel change un peu mais en C ca augmente c'est logique => voir l'importance de la vectorisation pour des calculs complexes.
+Rq: En asm, le temps reste d'une demi-seconde l'ecart entre le codeC_1&__2 (ordre de grandeur general) car la vectorisation l'emporte (ses avantages) sur sa eventuelle faiblesse a reduire le temps suivant 1&2 seulement (<<avantage de +).///////
+{{{rq: pour float 1.2 ca change des choses quand meme.
+=>augmentation du temps asm mais qui reste < a celui de la version classique(..///) VOIR MAKEFILE DETAILLE. }}}
+:LA VECTORISATION APPRECIE LES APPROXIMATIONS (du coup ca marche PLUS vite).
+FIN EXO1
+FIN TD6.
+
+
+
+
+
+
+
+
+
+
+
